@@ -9,6 +9,30 @@
 	let notes = '';
 	let isValid = false;
 
+	let ratePerM3 = (() => {
+		if (typeof localStorage !== 'undefined') {
+			const savedRate = localStorage.getItem('ratePerM3');
+			if (savedRate) return parseFloat(savedRate);
+		}
+		return 6.90; // R$/m³ 
+	})();
+
+	let estimatedCost = 0;
+
+	$: {
+		if (currentReading && previousReading) {
+			consumption = parseFloat(currentReading) - parseFloat(previousReading);
+			estimatedCost = consumption * ratePerM3;
+			isValid = consumption >= 0 && meterNumber.trim() !== '';
+		} else {
+			consumption = 0;
+			estimatedCost = 0;
+			isValid = false;
+		}
+	}
+
+	$: localStorage.setItem('ratePerM3', ratePerM3);
+
 	$: {
 		if (currentReading && previousReading) {
 			consumption = parseFloat(currentReading) - parseFloat(previousReading);
@@ -28,7 +52,9 @@
 			previousReading: parseFloat(previousReading),
 			consumption: consumption,
 			location: location.trim(),
-			notes: notes.trim()
+			notes: notes.trim(),
+			ratePerM3,
+			estimatedCost
 		};
 
 		addMeasurement(measurement);
@@ -115,16 +141,41 @@
 						required
 					/>
 				</div>
+				<div class="form-group">
+					<label class="form-label" for="ratePerM3">
+						Tarifa de Água (R$/m³)
+					</label>
+					<input
+						id="ratePerM3"
+						type="number"
+						step="0.01"
+						class="form-input"
+						bind:value={ratePerM3}
+						placeholder="Ex: 6.90"
+					/>
+				</div>
 			</div>
 
 			<div class="form-group">
-				<label class="form-label">Consumo Calculado</label>
+				<span class="form-label">Consumo Calculado</span>
 				<div class="consumption-display">
 					<span class="consumption-value">
 						{consumption.toFixed(3)} m³
 					</span>
 					<span class="consumption-liters">
 						({(consumption * 1000).toFixed(0)} litros)
+					</span>
+				</div>
+			</div>
+
+			<div class="form-group">
+				<span class="form-label">Custo Estimado</span>
+				<div class="consumption-display">
+					<span class="consumption-value cost">
+						R$ {estimatedCost.toFixed(2)}
+					</span>
+					<span class="consumption-liters">
+						({consumption.toFixed(3)} m³ × R$ {ratePerM3.toFixed(2)})
 					</span>
 				</div>
 			</div>
@@ -245,7 +296,11 @@
 	}
 	
 	.btn:disabled:hover {
-		background: #ccc;
-		transform: none;
+			background: #ccc;
+			transform: none;
+		}
+		.consumption-value.cost {
+		color: #007bff;
 	}
+
 </style>
