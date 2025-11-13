@@ -5,21 +5,53 @@
 	import MeasurementForm from './components/MeasurementForm.svelte';
 	import History from './components/History.svelte';
 	import Reports from './components/Reports.svelte';
+	import Login from './components/Login.svelte';
+	import SignUp from './components/SignUp.svelte';
+	import { auth } from './auth.js';
 
 	let currentView = 'dashboard';
 	let measurements = [];
 	let totalConsumption = 0;
 	let averageConsumption = 0;
 	let lastMeasurement = null;
+	const API_URL = 'http://localhost:8080/api/measurements';
+	const USER_API_URL = 'http://localhost:8080/api/users';
 
-	// Load data from localStorage on mount
-	onMount(() => {
-		const savedMeasurements = localStorage.getItem('cagece-measurements');
-		if (savedMeasurements) {
-			measurements = JSON.parse(savedMeasurements);
-			updateStats();
+	let isAuthenticated = false;
+	let token = null;
+
+	auth.subscribe(value => {
+		isAuthenticated = !!value.token;
+		token = value.token;
+		if (isAuthenticated) {
+			fetchMeasurements();
 		}
 	});
+
+	onMount(() => {
+		auth.init();
+	});
+
+	async function fetchMeasurements() {
+		try {
+			const response = await fetch(API_URL, {
+				headers: {
+					'Authorization': token
+				}
+			});
+			if (response.ok) {
+				measurements = await response.json();
+				if (measurements === null) {
+					measurements = [];
+				}
+				updateStats();
+			} else {
+				console.error('Failed to fetch measurements');
+			}
+		} catch (error) {
+			console.error('Error fetching measurements:', error);
+		}
+	}
 
 	function updateStats() {
 		if (measurements.length === 0) {
@@ -39,23 +71,64 @@
 		lastMeasurement = measurements[measurements.length - 1];
 	}
 
-	function addMeasurement(measurement) {
-		measurements = [...measurements, {
-			...measurement,
-			id: Date.now(),
-			date: new Date().toISOString()
-		}];
-		
-		// Save to localStorage
-		localStorage.setItem('cagece-measurements', JSON.stringify(measurements));
-		
-		updateStats();
+	async function addMeasurement(measurement) {
+		try {
+			const response = await fetch(API_URL, {
+				method: 'POST',
+				headers: {
+					'Content-Type': 'application/json',
+					'Authorization': token
+				},
+				body: JSON.stringify(measurement),
+			});
+			if (response.ok) {
+				const newMeasurement = await response.json();
+				measurements = [...measurements, newMeasurement];
+				updateStats();
+			} else {
+				console.error('Failed to add measurement');
+			}
+		} catch (error) {
+			console.error('Error adding measurement:', error);
+		}
 	}
 
-	function deleteMeasurement(id) {
-		measurements = measurements.filter(m => m.id !== id);
-		localStorage.setItem('cagece-measurements', JSON.stringify(measurements));
-		updateStats();
+	async function deleteMeasurement(id) {
+		try {
+			const response = await fetch(`${API_URL}/${id}`, {
+				method: 'DELETE',
+				headers: {
+					'Authorization': token
+				}
+			});
+			if (response.ok) {
+				measurements = measurements.filter(m => m.id !== id);
+				updateStats();
+			} else {
+				console.error('Failed to delete measurement');
+			}
+		} catch (error) {
+			console.error('Error deleting measurement:', error);
+		}
+	}
+
+	async function signUp(user) {
+		try {
+			const response = await fetch(USER_API_URL, {
+				method: 'POST',
+				headers: {
+					'Content-Type': 'application/json',
+				},
+				body: JSON.stringify(user),
+			});
+			if (response.ok) {
+				setView('login');
+			} else {
+				console.error('Failed to sign up');
+			}
+		} catch (error) {
+			console.error('Error signing up:', error);
+		}
 	}
 
 	function setView(view) {
@@ -64,22 +137,31 @@
 </script>
 
 <main>
-	<Header {currentView} {setView} />
+	<Header {currentView} {setView} {isAuthenticated} />
 	
 	<div class="container">
-		{#if currentView === 'dashboard'}
-			<Dashboard 
-				{measurements}
-				{totalConsumption}
-				{averageConsumption}
-				{lastMeasurement}
-			/>
-		{:else if currentView === 'measurement'}
-			<MeasurementForm {addMeasurement} />
-		{:else if currentView === 'history'}
-			<History {measurements} {deleteMeasurement} />
-		{:else if currentView === 'reports'}
-			<Reports {measurements} {totalConsumption} {averageConsumption} />
+		{#if isAuthenticated}
+			{#if currentView === 'dashboard'}
+				<Dashboard 
+					{measurements}
+					{totalConsumption}
+					{averageConsumption}
+					{lastMeasurement}
+					{setView}
+				/>
+			{:else if currentView === 'measurement'}
+				<MeasurementForm {addMeasurement} {setView} />
+			{:else if currentView === 'history'}
+				<History {measurements} {deleteMeasurement} />
+			{:else if currentView === 'reports'}
+				<Reports {measurements} {totalConsumption} {averageConsumption} />
+			{/if}
+		{:else}
+			{#if currentView === 'signup'}
+				<SignUp {signUp} />
+			{:else}
+				<Login />
+			{/if}
 		{/if}
 	</div>
 </main>

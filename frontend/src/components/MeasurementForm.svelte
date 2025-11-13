@@ -1,22 +1,13 @@
 <script>
 	export let addMeasurement;
+	export let setView;
 
 	let meterNumber = '';
-	let currentReading = '';
-	let previousReading = '';
-	let consumption = 0;
-	let location = '';
-	let notes = '';
+	let consumption = '';
 	let isValid = false;
 
 	$: {
-		if (currentReading && previousReading) {
-			consumption = parseFloat(currentReading) - parseFloat(previousReading);
-			isValid = consumption >= 0 && meterNumber.trim() !== '';
-		} else {
-			consumption = 0;
-			isValid = false;
-		}
+		isValid = consumption && meterNumber.trim() !== '';
 	}
 
 	function handleSubmit() {
@@ -24,30 +15,16 @@
 
 		const measurement = {
 			meterNumber: meterNumber.trim(),
-			currentReading: parseFloat(currentReading),
-			previousReading: parseFloat(previousReading),
-			consumption: consumption,
-			location: location.trim(),
-			notes: notes.trim()
+			consumption: parseFloat(consumption),
 		};
 
 		addMeasurement(measurement);
 		
 		// Reset form
 		meterNumber = '';
-		currentReading = '';
-		previousReading = '';
-		location = '';
-		notes = '';
+		consumption = '';
 		
-		// Show success message
-		alert('Medição registrada com sucesso!');
-	}
-
-	function calculateConsumption() {
-		if (currentReading && previousReading) {
-			consumption = parseFloat(currentReading) - parseFloat(previousReading);
-		}
+		setView('dashboard');
 	}
 </script>
 
@@ -71,75 +48,23 @@
 					/>
 				</div>
 
-				<div class="form-group">
-					<label class="form-label" for="location">
-						Localização
-					</label>
-					<input
-						id="location"
-						type="text"
-						class="form-input"
-						bind:value={location}
-						placeholder="Ex: Residência, Comércio, etc."
-					/>
-				</div>
 			</div>
 
 			<div class="grid grid-2">
 				<div class="form-group">
-					<label class="form-label" for="previousReading">
-						Leitura Anterior (m³) *
+					<label class="form-label" for="consumption">
+						Consumo (L) *
 					</label>
 					<input
-						id="previousReading"
+						id="consumption"
 						type="number"
-						step="0.001"
+						step="0.1"
 						class="form-input"
-						bind:value={previousReading}
-						placeholder="Ex: 123.456"
+						bind:value={consumption}
+						placeholder="Ex: 123.4"
 						required
 					/>
 				</div>
-
-				<div class="form-group">
-					<label class="form-label" for="currentReading">
-						Leitura Atual (m³) *
-					</label>
-					<input
-						id="currentReading"
-						type="number"
-						step="0.001"
-						class="form-input"
-						bind:value={currentReading}
-						placeholder="Ex: 125.789"
-						required
-					/>
-				</div>
-			</div>
-
-			<div class="form-group">
-				<label class="form-label">Consumo Calculado</label>
-				<div class="consumption-display">
-					<span class="consumption-value">
-						{consumption.toFixed(3)} m³
-					</span>
-					<span class="consumption-liters">
-						({(consumption * 1000).toFixed(0)} litros)
-					</span>
-				</div>
-			</div>
-
-			<div class="form-group">
-				<label class="form-label" for="notes">
-					Observações
-				</label>
-				<textarea
-					id="notes"
-					class="form-input"
-					bind:value={notes}
-					placeholder="Observações sobre a medição..."
-					rows="3"
-				></textarea>
 			</div>
 
 			<div class="form-actions">
@@ -156,10 +81,7 @@
 					class="btn btn-secondary"
 					on:click={() => {
 						meterNumber = '';
-						currentReading = '';
-						previousReading = '';
-						location = '';
-						notes = '';
+						consumption = '';
 					}}
 				>
 					🔄 Limpar
@@ -173,9 +95,7 @@
 		<h3 class="mb-3">💡 Dicas para Medição</h3>
 		<ul class="help-list">
 			<li>Certifique-se de que o hidrômetro está visível e legível</li>
-			<li>Anote a leitura atual com precisão (3 casas decimais)</li>
-			<li>O consumo é calculado automaticamente: Leitura Atual - Leitura Anterior</li>
-			<li>Se a leitura atual for menor que a anterior, verifique se houve troca do hidrômetro</li>
+			<li>Anote o consumo com precisão</li>
 			<li>Registre observações importantes como vazamentos ou irregularidades</li>
 		</ul>
 	</div>
