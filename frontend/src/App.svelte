@@ -19,18 +19,41 @@
 
 	let isAuthenticated = false;
 	let token = null;
+	let currentUser = null; // New state variable for current user
 
 	auth.subscribe(value => {
 		isAuthenticated = !!value.token;
 		token = value.token;
 		if (isAuthenticated) {
 			fetchMeasurements();
+			fetchCurrentUser(); // Fetch user details after authentication
+		} else {
+			currentUser = null; // Clear user data on logout
 		}
 	});
 
 	onMount(() => {
 		auth.init();
 	});
+
+	async function fetchCurrentUser() {
+		try {
+			const response = await fetch(`${USER_API_URL}/${token}`, { // Use token as userID
+				headers: {
+					'Authorization': token // Send token for authorization
+				}
+			});
+			if (response.ok) {
+				currentUser = await response.json();
+			} else {
+				console.error('Failed to fetch current user');
+				currentUser = null;
+			}
+		} catch (error) {
+			console.error('Error fetching current user:', error);
+			currentUser = null;
+		}
+	}
 
 	async function fetchMeasurements() {
 		try {
@@ -136,10 +159,10 @@
 	}
 </script>
 
-<main>
+<main class="min-h-screen bg-gray-100">
 	<Header {currentView} {setView} {isAuthenticated} />
 	
-	<div class="container">
+	<div class="container mx-auto p-4">
 		{#if isAuthenticated}
 			{#if currentView === 'dashboard'}
 				<Dashboard 
@@ -148,6 +171,7 @@
 					{averageConsumption}
 					{lastMeasurement}
 					{setView}
+					{currentUser}
 				/>
 			{:else if currentView === 'measurement'}
 				<MeasurementForm {addMeasurement} {setView} />
@@ -166,9 +190,4 @@
 	</div>
 </main>
 
-<style>
-	main {
-		min-height: 100vh;
-		padding-bottom: 2rem;
-	}
-</style>
+

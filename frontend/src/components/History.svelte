@@ -11,9 +11,7 @@
 			if (!searchTerm) return true;
 			const term = searchTerm.toLowerCase();
 			return (
-				measurement.meterNumber.toLowerCase().includes(term) ||
-				measurement.location.toLowerCase().includes(term) ||
-				measurement.notes.toLowerCase().includes(term)
+				measurement.meterNumber.toLowerCase().includes(term)
 			);
 		})
 		.sort((a, b) => {
@@ -62,100 +60,76 @@
 	}
 </script>
 
-<div class="history">
-	<div class="card">
-		<div class="history-header">
-			<h1 class="mb-3">Histórico de Medições</h1>
+<div class="p-6">
+	<div class="bg-white p-6 rounded-lg shadow-md mb-8">
+		<div class="mb-6">
+			<h1 class="text-3xl font-bold mb-4 text-gray-800">Histórico de Medições</h1>
 			
-			<div class="history-controls">
-				<div class="search-box">
+			<div class="flex flex-wrap items-center gap-4 mb-6">
+				<div class="flex-grow">
 					<input
 						type="text"
-						class="form-input"
+						class="w-full p-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
 						placeholder="Buscar por hidrômetro, localização ou observações..."
 						bind:value={searchTerm}
 					/>
 				</div>
 				
-				<div class="sort-controls">
-					<select class="form-select" bind:value={sortBy}>
+				<div class="flex gap-2">
+					<select class="p-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" bind:value={sortBy}>
 						<option value="date">Data</option>
 						<option value="consumption">Consumo</option>
 						<option value="meterNumber">Hidrômetro</option>
 					</select>
 					
-					<select class="form-select" bind:value={sortOrder}>
+					<select class="p-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" bind:value={sortOrder}>
 						<option value="desc">Decrescente</option>
 						<option value="asc">Crescente</option>
 					</select>
 				</div>
 				
-				<button class="btn btn-secondary" on:click={exportData}>
+				<button class="bg-gray-200 text-gray-800 p-3 rounded-md hover:bg-gray-300 transition-colors font-semibold" on:click={exportData}>
 					📥 Exportar Dados
 				</button>
 			</div>
 		</div>
 
 		{#if measurements.length === 0}
-			<div class="empty-state">
-				<div class="empty-icon">📊</div>
-				<h3>Nenhuma medição encontrada</h3>
-				<p>Comece registrando sua primeira medição de água.</p>
+			<div class="text-center py-12 text-gray-600">
+				<div class="text-5xl mb-4">📊</div>
+				<h3 class="text-xl font-semibold mb-2">Nenhuma medição encontrada</h3>
+				<p class="text-gray-500">Comece registrando sua primeira medição de água.</p>
 			</div>
 		{:else if filteredMeasurements.length === 0}
-			<div class="empty-state">
-				<div class="empty-icon">🔍</div>
-				<h3>Nenhum resultado encontrado</h3>
-				<p>Tente ajustar os filtros de busca.</p>
+			<div class="text-center py-12 text-gray-600">
+				<div class="text-5xl mb-4">🔍</div>
+				<h3 class="text-xl font-semibold mb-2">Nenhum resultado encontrado</h3>
+				<p class="text-gray-500">Tente ajustar os filtros de busca.</p>
 			</div>
 		{:else}
-			<div class="table-container">
-				<table class="table">
+			<div class="overflow-x-auto">
+				<table class="min-w-full bg-white">
 					<thead>
-						<tr>
-							<th>Data</th>
-							<th>Hidrômetro</th>
-							<th>Localização</th>
-							<th>Leitura Anterior</th>
-							<th>Leitura Atual</th>
-							<th>Consumo (L)</th>
-							<th>Status</th>
-							<th>Ações</th>
+						<tr class="bg-gray-200">
+							<th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Data</th>
+							<th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Hidrômetro</th>
+							<th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Consumo (L)</th>
+							<th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Ações</th>
 						</tr>
 					</thead>
 					<tbody>
 						{#each filteredMeasurements as measurement}
 							<tr>
-								<td>
+								<td class="px-4 py-3 whitespace-nowrap text-sm text-gray-800">
 									{new Date(measurement.date).toLocaleDateString('pt-BR')}
-									<br>
-									<small class="text-muted">
-										{new Date(measurement.date).toLocaleTimeString('pt-BR')}
-									</small>
 								</td>
-								<td>{measurement.meterNumber}</td>
-								<td>{measurement.location || '-'}</td>
-								<td>{measurement.previousReading.toFixed(3)} m³</td>
-								<td>{measurement.currentReading.toFixed(3)} m³</td>
-								<td class="consumption-cell">
+								<td class="px-4 py-3 whitespace-nowrap text-sm text-gray-800">{measurement.meterNumber}</td>
+								<td class="px-4 py-3 whitespace-nowrap text-sm text-gray-800 text-center">
 									<strong>{measurement.consumption.toFixed(1)}</strong>
-									<br>
-									<small>({(measurement.consumption * 1000).toFixed(0)} L)</small>
 								</td>
-								<td>
-									<span class="status-badge" class:low={measurement.consumption < 1} class:normal={measurement.consumption >= 1 && measurement.consumption < 5} class:high={measurement.consumption >= 5}>
-										{#if measurement.consumption < 1}
-											Baixo
-										{:else if measurement.consumption < 5}
-											Normal
-										{:else}
-											Alto
-										{/if}
-									</span>
-								</td>
-								<td>
+								<td class="px-4 py-3 whitespace-nowrap text-sm text-gray-800">
 									<button 
-										class="btn-danger btn-small"
+										class="bg-red-500 text-white px-2 py-1 rounded-md hover:bg-red-600 transition-colors text-xs"
 										on:click={() => handleDelete(measurement.id)}
 									>
 										🗑️
@@ -167,8 +141,8 @@
 				</table>
 			</div>
 			
-			<div class="history-footer">
-				<p class="text-muted">
+			<div class="text-center mt-6 pt-4 border-t border-gray-200 text-gray-600 text-sm">
+				<p class="text-gray-600 text-sm">
 					Mostrando {filteredMeasurements.length} de {measurements.length} medições
 				</p>
 			</div>
@@ -176,109 +150,4 @@
 	</div>
 </div>
 
-<style>
-	.history {
-		padding: 2rem 0;
-	}
-	
-	.history-header {
-		margin-bottom: 2rem;
-	}
-	
-	.history-controls {
-		display: flex;
-		gap: 1rem;
-		align-items: center;
-		flex-wrap: wrap;
-		margin-bottom: 1rem;
-	}
-	
-	.search-box {
-		flex: 1;
-		min-width: 300px;
-	}
-	
-	.sort-controls {
-		display: flex;
-		gap: 0.5rem;
-	}
-	
-	.sort-controls select {
-		min-width: 120px;
-	}
-	
-	.table-container {
-		overflow-x: auto;
-		margin: 1rem 0;
-	}
-	
-	.consumption-cell {
-		text-align: center;
-	}
-	
-	.status-badge {
-		padding: 4px 8px;
-		border-radius: 4px;
-		font-size: 0.8rem;
-		font-weight: 600;
-		text-transform: uppercase;
-	}
-	
-	.status-badge.low {
-		background: #d1ecf1;
-		color: #0c5460;
-	}
-	
-	.status-badge.normal {
-		background: #d4edda;
-		color: #155724;
-	}
-	
-	.status-badge.high {
-		background: #f8d7da;
-		color: #721c24;
-	}
-	
-	.btn-small {
-		padding: 6px 12px;
-		font-size: 14px;
-	}
-	
-	.empty-state {
-		text-align: center;
-		padding: 3rem 1rem;
-		color: #666;
-	}
-	
-	.empty-icon {
-		font-size: 4rem;
-		margin-bottom: 1rem;
-	}
-	
-	.history-footer {
-		text-align: center;
-		margin-top: 1rem;
-		padding-top: 1rem;
-		border-top: 1px solid #e1e5e9;
-	}
-	
-	.text-muted {
-		color: #666;
-		font-size: 0.9rem;
-	}
-	
-	@media (max-width: 768px) {
-		.history-controls {
-			flex-direction: column;
-			align-items: stretch;
-		}
-		
-		.search-box {
-			min-width: auto;
-		}
-		
-		.sort-controls {
-			justify-content: space-between;
-		}
-	}
-</style>
+

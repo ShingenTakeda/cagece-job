@@ -112,7 +112,6 @@
 			if (!consumers[key]) {
 				consumers[key] = {
 					meterNumber: key,
-					location: measurement.location,
 					totalConsumption: 0,
 					count: 0
 				};
@@ -154,14 +153,14 @@
 	$: topConsumers = getTopConsumers();
 </script>
 
-<div class="reports">
-	<div class="card">
-		<div class="reports-header">
-			<h1 class="mb-3">Relatórios e Análises</h1>
+<div class="p-6">
+	<div class="bg-white p-6 rounded-lg shadow-md mb-8">
+		<div class="flex justify-between items-center flex-wrap gap-4 mb-6">
+			<h1 class="text-3xl font-bold text-gray-800">Relatórios e Análises</h1>
 			
-			<div class="period-selector">
-				<label class="form-label">Período de Análise:</label>
-				<select class="form-select" bind:value={selectedPeriod}>
+			<div class="flex items-center gap-2">
+				<label class="block text-sm font-medium text-gray-700">Período de Análise:</label>
+				<select class="p-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" bind:value={selectedPeriod}>
 					<option value="all">Últimas 10 Medições</option>
 					<option value="weekly">Por Semana</option>
 					<option value="monthly">Por Mês</option>
@@ -170,31 +169,31 @@
 		</div>
 
 		{#if measurements.length === 0}
-			<div class="empty-state">
-				<div class="empty-icon">📊</div>
-				<h3>Nenhum dado disponível</h3>
-				<p>Registre algumas medições para gerar relatórios.</p>
+			<div class="text-center py-12 text-gray-600">
+				<div class="text-5xl mb-4">📊</div>
+				<h3 class="text-xl font-semibold mb-2">Nenhum dado disponível</h3>
+				<p class="text-gray-500">Registre algumas medições para gerar relatórios.</p>
 			</div>
 		{:else}
 			<!-- Summary Cards -->
-			<div class="stats-grid">
-				<div class="stat-card">
-					<div class="stat-value">{measurements.length}</div>
-					<div class="stat-label">Total de Medições</div>
+			<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+				<div class="bg-white p-5 rounded-lg shadow-md text-center">
+					<div class="text-4xl font-bold text-blue-600 mb-1">{measurements.length}</div>
+					<div class="text-sm text-gray-500 uppercase">Total de Medições</div>
 				</div>
 				
-				<div class="stat-card">
-					<div class="stat-value">{totalConsumption.toFixed(1)}</div>
-					<div class="stat-label">Consumo Total (L)</div>
+				<div class="bg-white p-5 rounded-lg shadow-md text-center">
+					<div class="text-4xl font-bold text-blue-600 mb-1">{totalConsumption.toFixed(1)}</div>
+					<div class="text-sm text-gray-500 uppercase">Consumo Total (L)</div>
 				</div>
 				
-				<div class="stat-card">
-					<div class="stat-value">{averageConsumption.toFixed(1)}</div>
-					<div class="stat-label">Média (L)</div>
+				<div class="bg-white p-5 rounded-lg shadow-md text-center">
+					<div class="text-4xl font-bold text-blue-600 mb-1">{averageConsumption.toFixed(1)}</div>
+					<div class="text-sm text-gray-500 uppercase">Média (L)</div>
 				</div>
 				
-				<div class="stat-card">
-					<div class="stat-value trend" class:increasing={trend === 'increasing'} class:decreasing={trend === 'decreasing'}>
+				<div class="bg-white p-5 rounded-lg shadow-md text-center">
+					<div class="text-4xl font-bold mb-1 flex items-center justify-center gap-2" class:text-red-500={trend === 'increasing'} class:text-green-500={trend === 'decreasing'} class:text-gray-600={trend === 'stable'}>
 						{#if trend === 'increasing'}
 							📈 Crescendo
 						{:else if trend === 'decreasing'}
@@ -203,13 +202,13 @@
 							➡️ Estável
 						{/if}
 					</div>
-					<div class="stat-label">Tendência</div>
+					<div class="text-sm text-gray-500 uppercase">Tendência</div>
 				</div>
 			</div>
 
 			<!-- Chart Data -->
-			<div class="card">
-				<h2 class="mb-3">
+			<div class="bg-white p-6 rounded-lg shadow-md mb-8">
+				<h2 class="text-2xl font-semibold mb-4 text-gray-700">
 					{#if selectedPeriod === 'monthly'}
 						Consumo Mensal
 					{:else if selectedPeriod === 'weekly'}
@@ -220,10 +219,10 @@
 				</h2>
 				
 				{#if chartData.length > 0}
-					<div class="chart-container">
+					<div class="flex flex-col gap-4">
 						{#each chartData as item, index}
-							<div class="chart-bar">
-								<div class="bar-label">
+							<div class="flex items-center gap-4">
+								<div class="min-w-[120px] text-sm text-gray-600">
 									{#if selectedPeriod === 'monthly'}
 										{item.month}
 									{:else if selectedPeriod === 'weekly'}
@@ -232,12 +231,12 @@
 										{new Date(item.date).toLocaleDateString('pt-BR')}
 									{/if}
 								</div>
-								<div class="bar-container">
+								<div class="flex-1 flex items-center gap-4">
 									<div 
-										class="bar" 
+										class="h-5 bg-blue-500 rounded-full" 
 										style="width: {Math.max(5, (item.consumption / Math.max(...chartData.map(d => d.consumption)) * 100))}%"
 									></div>
-									<span class="bar-value">
+									<span class="min-w-[100px] font-semibold text-gray-800">
 										{item.consumption.toFixed(1)} L
 										{#if item.count > 1}
 											<small>({item.count} medições)</small>
@@ -248,33 +247,31 @@
 						{/each}
 					</div>
 				{:else}
-					<p class="text-center text-muted">Nenhum dado disponível para o período selecionado.</p>
+					<p class="text-center text-gray-500 py-8">Nenhum dado disponível para o período selecionado.</p>
 				{/if}
 			</div>
 
 			<!-- Top Consumers -->
 			{#if topConsumers.length > 0}
-				<div class="card">
-					<h2 class="mb-3">Maiores Consumidores</h2>
-					<div class="table-container">
-						<table class="table">
+				<div class="bg-white p-6 rounded-lg shadow-md mb-8">
+					<h2 class="text-2xl font-semibold mb-4 text-gray-700">Maiores Consumidores</h2>
+					<div class="overflow-x-auto">
+						<table class="min-w-full bg-white">
 							<thead>
-								<tr>
-									<th>Hidrômetro</th>
-									<th>Localização</th>
-									<th>Consumo Total (L)</th>
-									<th>Medições</th>
-									<th>Média (L)</th>
+								<tr class="bg-gray-200">
+									<th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Hidrômetro</th>
+									<th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Consumo Total (L)</th>
+									<th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Medições</th>
+									<th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Média (L)</th>
 								</tr>
 							</thead>
 							<tbody>
 								{#each topConsumers as consumer}
 									<tr>
-										<td>{consumer.meterNumber}</td>
-										<td>{consumer.location || '-'}</td>
-										<td><strong>{consumer.totalConsumption.toFixed(1)}</strong></td>
-										<td>{consumer.count}</td>
-										<td>{(consumer.totalConsumption / consumer.count).toFixed(1)}</td>
+										<td class="px-4 py-3 whitespace-nowrap text-sm text-gray-800">{consumer.meterNumber}</td>
+										<td class="px-4 py-3 whitespace-nowrap text-sm text-gray-800"><strong>{consumer.totalConsumption.toFixed(1)}</strong></td>
+										<td class="px-4 py-3 whitespace-nowrap text-sm text-gray-800">{consumer.count}</td>
+										<td class="px-4 py-3 whitespace-nowrap text-sm text-gray-800">{(consumer.totalConsumption / consumer.count).toFixed(1)}</td>
 									</tr>
 								{/each}
 							</tbody>
@@ -284,10 +281,10 @@
 			{/if}
 
 			<!-- Export Actions -->
-			<div class="card">
-				<h2 class="mb-3">Exportar Relatório</h2>
-				<div class="export-actions">
-					<button class="btn" on:click={exportReport}>
+			<div class="bg-white p-6 rounded-lg shadow-md">
+				<h2 class="text-2xl font-semibold mb-4 text-gray-700">Exportar Relatório</h2>
+				<div class="flex gap-4 flex-wrap">
+					<button class="bg-blue-600 text-white p-3 rounded-md hover:bg-blue-700 transition-colors font-semibold" on:click={exportReport}>
 						📊 Exportar Relatório Completo
 					</button>
 				</div>
@@ -296,107 +293,4 @@
 	</div>
 </div>
 
-<style>
-	.reports {
-		padding: 2rem 0;
-	}
-	
-	.reports-header {
-		display: flex;
-		justify-content: space-between;
-		align-items: center;
-		flex-wrap: wrap;
-		gap: 1rem;
-		margin-bottom: 2rem;
-	}
-	
-	.period-selector {
-		display: flex;
-		align-items: center;
-		gap: 0.5rem;
-	}
-	
-	.trend.increasing {
-		color: #dc3545;
-	}
-	
-	.trend.decreasing {
-		color: #28a745;
-	}
-	
-	.chart-container {
-		display: flex;
-		flex-direction: column;
-		gap: 1rem;
-	}
-	
-	.chart-bar {
-		display: flex;
-		align-items: center;
-		gap: 1rem;
-	}
-	
-	.bar-label {
-		min-width: 120px;
-		font-size: 0.9rem;
-		color: #666;
-	}
-	
-	.bar-container {
-		flex: 1;
-		display: flex;
-		align-items: center;
-		gap: 1rem;
-	}
-	
-	.bar {
-		height: 20px;
-		background: linear-gradient(90deg, #4CAF50, #45a049);
-		border-radius: 10px;
-		transition: all 0.3s ease;
-	}
-	
-	.bar-value {
-		min-width: 100px;
-		font-weight: 600;
-		color: #333;
-	}
-	
-	.export-actions {
-		display: flex;
-		gap: 1rem;
-		flex-wrap: wrap;
-	}
-	
-	.empty-state {
-		text-align: center;
-		padding: 3rem 1rem;
-		color: #666;
-	}
-	
-	.empty-icon {
-		font-size: 4rem;
-		margin-bottom: 1rem;
-	}
-	
-	@media (max-width: 768px) {
-		.reports-header {
-			flex-direction: column;
-			align-items: stretch;
-		}
-		
-		.period-selector {
-			justify-content: space-between;
-		}
-		
-		.chart-bar {
-			flex-direction: column;
-			align-items: stretch;
-			gap: 0.5rem;
-		}
-		
-		.bar-label {
-			min-width: auto;
-		}
-	}
-</style>
+

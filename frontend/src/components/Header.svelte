@@ -1,54 +1,69 @@
 <script>
+	import { auth } from './../auth.js';
 	export let currentView;
 	export let setView;
+	export let isAuthenticated;
+
+	function logout() {
+		auth.logout();
+	}
 </script>
 
-<header class="header">
-	<div class="container">
-		<div class="header-content">
-			<div class="logo">
+<header class="bg-blue-600 text-white p-4 shadow-md">
+	<div class="container mx-auto">
+		<div class="flex justify-between items-center">
+			<div class="text-2xl font-bold">
 				💧 Mediagua - Serviço de Medição de Água
 			</div>
 			
-			<nav class="nav">
-				<button 
-					class="nav-link" 
-					class:active={currentView === 'dashboard'}
-					on:click={() => setView('dashboard')}
-				>
-					📊 Dashboard
-				</button>
-				<button 
-					class="nav-link" 
-					class:active={currentView === 'measurement'}
-					on:click={() => setView('measurement')}
-				>
-					📝 Nova Medição
-				</button>
-				<button 
-					class="nav-link" 
-					class:active={currentView === 'history'}
-					on:click={() => setView('history')}
-				>
-					📋 Histórico
-				</button>
-				<button 
-					class="nav-link" 
-					class:active={currentView === 'reports'}
-					on:click={() => setView('reports')}
-				>
-					📈 Relatórios
-				</button>
+			<nav class="flex space-x-4">
+				{#if isAuthenticated}
+					<button 
+						class="px-3 py-2 rounded-md hover:bg-blue-700 transition-colors" 
+						class:bg-blue-700={currentView === 'dashboard'}
+						on:click={() => setView('dashboard')}
+					>
+						📊 Dashboard
+					</button>
+					<button 
+						class="px-3 py-2 rounded-md hover:bg-blue-700 transition-colors" 
+						class:bg-blue-700={currentView === 'measurement'}
+						on:click={() => setView('measurement')}
+					>
+						📝 Nova Medição
+					</button>
+					<button 
+						class="px-3 py-2 rounded-md hover:bg-blue-700 transition-colors" 
+						class:bg-blue-700={currentView === 'history'}
+						on:click={() => setView('history')}
+					>
+						📋 Histórico
+					</button>
+					<button 
+						class="px-3 py-2 rounded-md hover:bg-blue-700 transition-colors" 
+						class:bg-blue-700={currentView === 'reports'}
+						on:click={() => setView('reports')}
+					>
+						📈 Relatórios
+					</button>
+					<button 
+						class="px-3 py-2 rounded-md hover:bg-blue-700 transition-colors" 
+						on:click={logout}
+					>
+						Logout
+					</button>
+				{:else}
+					<button 
+						class="px-3 py-2 rounded-md hover:bg-blue-700 transition-colors" 
+						class:bg-blue-700={currentView === 'signup'}
+						on:click={() => setView('signup')}
+					>
+						Sign Up
+					</button>
+				{/if}
 			</nav>
 		</div>
 	</div>
 </header>
 
-<style>
-	.nav-link {
-		background: none;
-		border: none;
-		cursor: pointer;
-		font-size: 16px;
-	}
-</style>
+

@@ -28,20 +28,20 @@
 	}
 </script>
 
-<div class="measurement-form">
-	<div class="card">
-		<h1 class="mb-4">Nova Medição de Água</h1>
+<div class="p-6">
+	<div class="bg-white p-6 rounded-lg shadow-md mb-8">
+		<h1 class="text-3xl font-bold mb-6 text-gray-800">Nova Medição de Água</h1>
 		
-		<form on:submit|preventDefault={handleSubmit}>
-			<div class="grid grid-2">
-				<div class="form-group">
-					<label class="form-label" for="meterNumber">
+		<form on:submit|preventDefault={handleSubmit} class="space-y-6">
+			<div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+				<div class="flex flex-col">
+					<label class="block text-sm font-medium text-gray-700 mb-1" for="meterNumber">
 						Número do Hidrômetro *
 					</label>
 					<input
 						id="meterNumber"
 						type="text"
-						class="form-input"
+						class="p-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
 						bind:value={meterNumber}
 						placeholder="Ex: 123456789"
 						required
@@ -50,16 +50,16 @@
 
 			</div>
 
-			<div class="grid grid-2">
-				<div class="form-group">
-					<label class="form-label" for="consumption">
+			<div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+				<div class="flex flex-col">
+					<label class="block text-sm font-medium text-gray-700 mb-1" for="consumption">
 						Consumo (L) *
 					</label>
 					<input
 						id="consumption"
 						type="number"
 						step="0.1"
-						class="form-input"
+						class="p-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
 						bind:value={consumption}
 						placeholder="Ex: 123.4"
 						required
@@ -67,10 +67,10 @@
 				</div>
 			</div>
 
-			<div class="form-actions">
+			<div class="flex space-x-4 mt-6">
 				<button 
 					type="submit" 
-					class="btn" 
+					class="bg-blue-600 text-white p-3 rounded-md hover:bg-blue-700 transition-colors font-semibold disabled:opacity-50 disabled:cursor-not-allowed" 
 					disabled={!isValid}
 				>
 					💾 Salvar Medição
@@ -78,7 +78,7 @@
 				
 				<button 
 					type="button" 
-					class="btn btn-secondary"
+					class="bg-gray-200 text-gray-800 p-3 rounded-md hover:bg-gray-300 transition-colors font-semibold"
 					on:click={() => {
 						meterNumber = '';
 						consumption = '';
@@ -91,81 +91,14 @@
 	</div>
 
 	<!-- Help Section -->
-	<div class="card">
-		<h3 class="mb-3">💡 Dicas para Medição</h3>
-		<ul class="help-list">
-			<li>Certifique-se de que o hidrômetro está visível e legível</li>
-			<li>Anote o consumo com precisão</li>
-			<li>Registre observações importantes como vazamentos ou irregularidades</li>
+	<div class="bg-white p-6 rounded-lg shadow-md">
+		<h3 class="text-xl font-semibold mb-3 text-gray-700">💡 Dicas para Medição</h3>
+		<ul class="list-none p-0 m-0 space-y-2">
+			<li class="flex items-center text-gray-700">✓ Certifique-se de que o hidrômetro está visível e legível</li>
+			<li class="flex items-center text-gray-700">✓ Anote o consumo com precisão</li>
+			<li class="flex items-center text-gray-700">✓ Registre observações importantes como vazamentos ou irregularidades</li>
 		</ul>
 	</div>
 </div>
 
-<style>
-	.measurement-form {
-		padding: 2rem 0;
-	}
-	
-	.consumption-display {
-		background: #f8f9fa;
-		padding: 1rem;
-		border-radius: 8px;
-		border: 2px solid #e1e5e9;
-		text-align: center;
-	}
-	
-	.consumption-value {
-		font-size: 1.5rem;
-		font-weight: bold;
-		color: #4CAF50;
-		display: block;
-		margin-bottom: 0.5rem;
-	}
-	
-	.consumption-liters {
-		color: #666;
-		font-size: 0.9rem;
-	}
-	
-	.form-actions {
-		display: flex;
-		gap: 1rem;
-		margin-top: 2rem;
-	}
-	
-	.help-list {
-		list-style: none;
-		padding: 0;
-	}
-	
-	.help-list li {
-		padding: 0.5rem 0;
-		border-bottom: 1px solid #e1e5e9;
-		position: relative;
-		padding-left: 1.5rem;
-	}
-	
-	.help-list li:before {
-		content: "✓";
-		position: absolute;
-		left: 0;
-		color: #4CAF50;
-		font-weight: bold;
-	}
-	
-	.help-list li:last-child {
-		border-bottom: none;
-	}
-	
-	.btn:disabled {
-		background: #ccc;
-		cursor: not-allowed;
-		transform: none;
-		box-shadow: none;
-	}
-	
-	.btn:disabled:hover {
-		background: #ccc;
-		transform: none;
-	}
-</style>
+
