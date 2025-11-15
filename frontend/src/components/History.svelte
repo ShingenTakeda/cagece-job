@@ -19,20 +19,24 @@
 			
 			switch (sortBy) {
 				case 'date':
-					aValue = new Date(a.date);
-					bValue = new Date(b.date);
+					aValue = new Date(a.timestamp);
+					bValue = new Date(b.timestamp);
 					break;
 				case 'consumption':
 					aValue = a.consumption;
 					bValue = b.consumption;
+					break;
+				case 'price':
+					aValue = a.price;
+					bValue = b.price;
 					break;
 				case 'meterNumber':
 					aValue = a.meterNumber;
 					bValue = b.meterNumber;
 					break;
 				default:
-					aValue = a.date;
-					bValue = b.date;
+					aValue = a.timestamp;
+					bValue = b.timestamp;
 			}
 			
 			if (sortOrder === 'asc') {
@@ -79,6 +83,7 @@
 					<select class="p-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" bind:value={sortBy}>
 						<option value="date">Data</option>
 						<option value="consumption">Consumo</option>
+						<option value="price">Preço</option>
 						<option value="meterNumber">Hidrômetro</option>
 					</select>
 					
@@ -114,6 +119,7 @@
 							<th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Data</th>
 							<th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Hidrômetro</th>
 							<th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Consumo (L)</th>
+							<th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Preço (R$)</th>
 							<th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Ações</th>
 						</tr>
 					</thead>
@@ -121,11 +127,14 @@
 						{#each filteredMeasurements as measurement}
 							<tr>
 								<td class="px-4 py-3 whitespace-nowrap text-sm text-gray-800">
-									{new Date(measurement.date).toLocaleDateString('pt-BR')}
+									{new Date(measurement.timestamp).toLocaleDateString('pt-BR')}
 								</td>
 								<td class="px-4 py-3 whitespace-nowrap text-sm text-gray-800">{measurement.meterNumber}</td>
 								<td class="px-4 py-3 whitespace-nowrap text-sm text-gray-800 text-center">
 									<strong>{measurement.consumption.toFixed(1)}</strong>
+								</td>
+								<td class="px-4 py-3 whitespace-nowrap text-sm text-gray-800 text-center">
+									<strong>{measurement.price.toFixed(2)}</strong>
 								</td>
 								<td class="px-4 py-3 whitespace-nowrap text-sm text-gray-800">
 									<button 

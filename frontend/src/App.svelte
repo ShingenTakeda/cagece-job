@@ -13,9 +13,10 @@
 	let measurements = [];
 	let totalConsumption = 0;
 	let averageConsumption = 0;
+	let totalPrice = 0;
 	let lastMeasurement = null;
-	const API_URL = 'http://localhost:8080/api/measurements';
-	const USER_API_URL = 'http://localhost:8080/api/users';
+	const API_URL = 'http://localhost:8081/api/measurements';
+	const USER_API_URL = 'http://localhost:8081/api/users';
 
 	let isAuthenticated = false;
 	let token = null;
@@ -80,6 +81,7 @@
 		if (measurements.length === 0) {
 			totalConsumption = 0;
 			averageConsumption = 0;
+			totalPrice = 0;
 			lastMeasurement = null;
 			return;
 		}
@@ -87,6 +89,9 @@
 		// Calculate total consumption
 		totalConsumption = measurements.reduce((sum, measurement) => sum + measurement.consumption, 0);
 		
+		// Calculate total price
+		totalPrice = measurements.reduce((sum, measurement) => sum + measurement.price, 0);
+
 		// Calculate average consumption
 		averageConsumption = totalConsumption / measurements.length;
 		
@@ -178,7 +183,7 @@
 			{:else if currentView === 'history'}
 				<History {measurements} {deleteMeasurement} />
 			{:else if currentView === 'reports'}
-				<Reports {measurements} {totalConsumption} {averageConsumption} />
+				<Reports {measurements} {totalConsumption} {averageConsumption} {totalPrice} />
 			{/if}
 		{:else}
 			{#if currentView === 'signup'}

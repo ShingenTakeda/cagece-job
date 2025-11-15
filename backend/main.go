@@ -21,6 +21,7 @@ type Measurement struct {
 	CurrentReading  float64   `json:"currentReading"`
 	PreviousReading float64   `json:"previousReading"`
 	Consumption     float64   `json:"consumption"`
+	Price           float64   `json:"price"`
 	Location        string    `json:"location"`
 	Notes           string    `json:"notes"`
 	Timestamp       time.Time `json:"timestamp"`
@@ -92,6 +93,7 @@ func main() {
 		"currentReading" REAL,
 		"previousReading" REAL,
 		"consumption" REAL,
+		"price" REAL,
 		"location" TEXT,
 		"notes" TEXT,
 		"timestamp" DATETIME,
@@ -106,11 +108,66 @@ func main() {
 	mux.HandleFunc("/api/login", loginHandler)
 	mux.Handle("/api/measurements", authMiddleware(http.HandlerFunc(measurementsHandler)))
 	mux.HandleFunc("/api/measurements/", measurementHandler)
+	mux.Handle("/api/measurements/predict", authMiddleware(http.HandlerFunc(predictionHandler)))
 	mux.HandleFunc("/api/users", usersHandler)
 	mux.HandleFunc("/api/users/", userHandler)
+	mux.Handle("/api/comparison", authMiddleware(http.HandlerFunc(comparisonHandler)))
 
 	log.Println("Server starting on port 8081...")
 	log.Fatal(http.ListenAndServe(":8081", corsMiddleware(mux)))
+}
+
+func predictionHandler(w http.ResponseWriter, r *http.Request) {
+	userID := r.Context().Value(userIDKey).(int)
+
+	rows, err := db.Query("SELECT consumption FROM measurements WHERE user_id = ? AND timestamp > ?", userID, time.Now().AddDate(0, 0, -30))
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+	defer rows.Close()
+
+	var consumptions []float64
+	var sum float64
+	var count int
+	for rows.Next() {
+		var consumption float64
+		if err := rows.Scan(&consumption); err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+		consumptions = append(consumptions, consumption)
+		sum += consumption
+		count++
+	}
+
+	var prediction float64
+	if count > 0 {
+		prediction = sum / float64(count)
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(map[string]float64{"prediction": prediction})
+}
+
+
+func calculatePrice(consumptionLiters float64) float64 {
+	consumptionM3 := consumptionLiters / 1000
+	var price float64
+
+	if consumptionM3 <= 10 {
+		price = consumptionM3 * 2.03
+	} else if consumptionM3 <= 15 {
+		price = (10 * 2.03) + ((consumptionM3 - 10) * 2.59)
+	} else if consumptionM3 <= 20 {
+		price = (10 * 2.03) + (5 * 2.59) + ((consumptionM3 - 15) * 2.78)
+	} else if consumptionM3 <= 50 {
+		price = (10 * 2.03) + (5 * 2.59) + (5 * 2.78) + ((consumptionM3 - 20) * 4.74)
+	} else {
+		price = (10 * 2.03) + (5 * 2.59) + (5 * 2.78) + (30 * 4.74) + ((consumptionM3 - 50) * 8.34)
+	}
+
+	return price
 }
 
 func authMiddleware(next http.Handler) http.Handler {
@@ -525,7 +582,7 @@ func getMeasurements(w http.ResponseWriter, r *http.Request) {
 	log.Println("getMeasurements called")
 	userID := r.Context().Value(userIDKey).(int)
 
-	rows, err := db.Query("SELECT id, user_id, meterNumber, currentReading, previousReading, consumption, location, notes, timestamp FROM measurements WHERE user_id = ?", userID)
+	rows, err := db.Query("SELECT id, user_id, meterNumber, currentReading, previousReading, consumption, price, location, notes, timestamp FROM measurements WHERE user_id = ?", userID)
 	if err != nil {
 		log.Printf("Error querying measurements: %v", err)
 		http.Error(w, err.Error(), http.StatusInternalServerError)
@@ -536,7 +593,7 @@ func getMeasurements(w http.ResponseWriter, r *http.Request) {
 	measurements := []Measurement{}
 	for rows.Next() {
 		var m Measurement
-		if err := rows.Scan(&m.ID, &m.UserID, &m.MeterNumber, &m.CurrentReading, &m.PreviousReading, &m.Consumption, &m.Location, &m.Notes, &m.Timestamp); err != nil {
+		if err := rows.Scan(&m.ID, &m.UserID, &m.MeterNumber, &m.CurrentReading, &m.PreviousReading, &m.Consumption, &m.Price, &m.Location, &m.Notes, &m.Timestamp); err != nil {
 			log.Printf("Error scanning measurement: %v", err)
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
@@ -561,14 +618,15 @@ func createMeasurement(w http.ResponseWriter, r *http.Request) {
 	}
 	m.Timestamp = time.Now()
 	m.UserID = userID
+	m.Price = calculatePrice(m.Consumption)
 
-	stmt, err := db.Prepare("INSERT INTO measurements(user_id, meterNumber, currentReading, previousReading, consumption, location, notes, timestamp) VALUES(?, ?, ?, ?, ?, ?, ?, ?)")
+	stmt, err := db.Prepare("INSERT INTO measurements(user_id, meterNumber, currentReading, previousReading, consumption, price, location, notes, timestamp) VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?)")
 	if err != nil {
 		log.Printf("Error preparing statement: %v", err)
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
-	res, err := stmt.Exec(m.UserID, m.MeterNumber, m.CurrentReading, m.PreviousReading, m.Consumption, m.Location, m.Notes, m.Timestamp)
+	res, err := stmt.Exec(m.UserID, m.MeterNumber, m.CurrentReading, m.PreviousReading, m.Consumption, m.Price, m.Location, m.Notes, m.Timestamp)
 	if err != nil {
 		log.Printf("Error executing statement: %v", err)
 		http.Error(w, err.Error(), http.StatusInternalServerError)
@@ -600,4 +658,115 @@ func deleteMeasurement(w http.ResponseWriter, r *http.Request, id int) {
 	log.Printf("Deleted measurement with ID: %d", id)
 
 	w.WriteHeader(http.StatusNoContent)
+}
+
+func comparisonHandler(w http.ResponseWriter, r *http.Request) {
+	userID := r.Context().Value(userIDKey).(int)
+
+	// Get current user's appliances
+	rows, err := db.Query("SELECT name FROM appliances WHERE user_id = ?", userID)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+	defer rows.Close()
+
+	var appliances []string
+	for rows.Next() {
+		var name string
+		if err := rows.Scan(&name); err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+		appliances = append(appliances, name)
+	}
+
+	// Find users with the same appliances
+	users, err := findUsersWithSameAppliances(appliances, userID)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	// Calculate average consumption
+	averageConsumption, err := calculateAverageConsumption(users)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(map[string]float64{"averageConsumption": averageConsumption})
+}
+
+func findUsersWithSameAppliances(appliances []string, currentUserID int) ([]int, error) {
+	// Find users who have all the specified appliances
+	args := stringToInterfaceSlice(appliances)
+	args = append(args, len(appliances))
+
+	rows, err := db.Query(`
+		SELECT user_id
+		FROM appliances
+		WHERE name IN (?`+strings.Repeat(",?", len(appliances)-1)+`)
+		GROUP BY user_id
+		HAVING COUNT(DISTINCT name) = ?
+	`, args...)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var userIDs []int
+	for rows.Next() {
+		var userID int
+		if err := rows.Scan(&userID); err != nil {
+			return nil, err
+		}
+		if userID != currentUserID {
+			userIDs = append(userIDs, userID)
+		}
+	}
+
+	return userIDs, nil
+}
+
+func calculateAverageConsumption(userIDs []int) (float64, error) {
+	if len(userIDs) == 0 {
+		return 0, nil
+	}
+
+	rows, err := db.Query(`
+		SELECT AVG(consumption)
+		FROM measurements
+		WHERE user_id IN (?`+strings.Repeat(",?", len(userIDs)-1)+`)
+	`, intToInterfaceSlice(userIDs)...)
+	if err != nil {
+		return 0, err
+	}
+	defer rows.Close()
+
+	var averageConsumption float64
+	if rows.Next() {
+		if err := rows.Scan(&averageConsumption); err != nil {
+			return 0, err
+		}
+	}
+
+	return averageConsumption, nil
+}
+
+func stringToInterfaceSlice(s []string) []interface{} {
+	var i []interface{}
+	for _, v := range s {
+		i = append(i, v)
+	}
+	return i
+}
+
+func intToInterfaceSlice(i []int) []interface{} {
+	var s []interface{}
+	for _, v := range i {
+		s = append(s, v)
+	}
+	return s
 }

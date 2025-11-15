@@ -1,3 +1,0 @@
-* Create the comparison between users with the same appliances
-* Mock a bunch of users with different applliances
-

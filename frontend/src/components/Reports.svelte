@@ -1,14 +1,41 @@
 <script>
 	import { onMount } from 'svelte';
+	import Comparison from './Comparison.svelte';
+	import { auth } from '../auth.js';
 	
 	export let measurements;
 	export let totalConsumption;
 	export let averageConsumption;
+	export let totalPrice;
 
 	let selectedPeriod = 'all';
 	let chartData = [];
 	let monthlyData = [];
 	let weeklyData = [];
+	let comparisonData = null;
+
+	onMount(async () => {
+		await getComparisonData();
+	});
+
+	async function getComparisonData() {
+		const token = localStorage.getItem('token');
+		if (!token) return;
+
+		try {
+			const response = await fetch('http://localhost:8081/api/comparison', {
+				headers: {
+					'Authorization': token
+				}
+			});
+
+			if (response.ok) {
+				comparisonData = await response.json();
+			}
+		} catch (error) {
+			console.error('Error fetching comparison data:', error);
+		}
+	}
 
 	$: {
 		updateChartData();
@@ -25,18 +52,20 @@
 		// Group by month
 		const monthly = {};
 		measurements.forEach(measurement => {
-			const date = new Date(measurement.date);
+			const date = new Date(measurement.timestamp);
 			const monthKey = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
 			
 			if (!monthly[monthKey]) {
 				monthly[monthKey] = {
 					month: monthKey,
 					consumption: 0,
+					price: 0,
 					count: 0
 				};
 			}
 			
 			monthly[monthKey].consumption += measurement.consumption;
+			monthly[monthKey].price += measurement.price;
 			monthly[monthKey].count += 1;
 		});
 
@@ -58,12 +87,13 @@
 			weekly[weekKey] = {
 				week: weekKey,
 				consumption: 0,
+				price: 0,
 				count: 0
 			};
 		}
 
 		measurements.forEach(measurement => {
-			const date = new Date(measurement.date);
+			const date = new Date(measurement.timestamp);
 			const weekStart = new Date(date);
 			weekStart.setDate(weekStart.getDate() - weekStart.getDay());
 			weekStart.setHours(0, 0, 0, 0);
@@ -71,6 +101,7 @@
 			const weekKey = weekStart.toISOString().split('T')[0];
 			if (weekly[weekKey]) {
 				weekly[weekKey].consumption += measurement.consumption;
+				weekly[weekKey].price += measurement.price;
 				weekly[weekKey].count += 1;
 			}
 		});
@@ -186,6 +217,11 @@
 					<div class="text-4xl font-bold text-blue-600 mb-1">{totalConsumption.toFixed(1)}</div>
 					<div class="text-sm text-gray-500 uppercase">Consumo Total (L)</div>
 				</div>
+
+				<div class="bg-white p-5 rounded-lg shadow-md text-center">
+					<div class="text-4xl font-bold text-blue-600 mb-1">R$ {totalPrice.toFixed(2)}</div>
+					<div class="text-sm text-gray-500 uppercase">Preço Total</div>
+				</div>
 				
 				<div class="bg-white p-5 rounded-lg shadow-md text-center">
 					<div class="text-4xl font-bold text-blue-600 mb-1">{averageConsumption.toFixed(1)}</div>
@@ -228,7 +264,7 @@
 									{:else if selectedPeriod === 'weekly'}
 										{new Date(item.week).toLocaleDateString('pt-BR')}
 									{:else}
-										{new Date(item.date).toLocaleDateString('pt-BR')}
+										{new Date(item.timestamp).toLocaleDateString('pt-BR')}
 									{/if}
 								</div>
 								<div class="flex-1 flex items-center gap-4">
@@ -237,7 +273,7 @@
 										style="width: {Math.max(5, (item.consumption / Math.max(...chartData.map(d => d.consumption)) * 100))}%"
 									></div>
 									<span class="min-w-[100px] font-semibold text-gray-800">
-										{item.consumption.toFixed(1)} L
+										{item.consumption.toFixed(1)} L (R$ {item.price.toFixed(2)})
 										{#if item.count > 1}
 											<small>({item.count} medições)</small>
 										{/if}
@@ -277,6 +313,13 @@
 							</tbody>
 						</table>
 					</div>
+				</div>
+			{/if}
+
+			<!-- Comparison -->
+			{#if comparisonData}
+				<div class="bg-white p-6 rounded-lg shadow-md">
+					<Comparison currentUserConsumption={averageConsumption} averageConsumption={comparisonData.averageConsumption} />
 				</div>
 			{/if}
 
