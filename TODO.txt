@@ -1,0 +1,2 @@
+*Create a python script for mocking user data
+*Make a graph comparing users

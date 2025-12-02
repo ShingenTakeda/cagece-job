@@ -9,7 +9,7 @@
 	import SignUp from './components/SignUp.svelte';
 	import { auth } from './auth.js';
 
-	let currentView = 'dashboard';
+	let currentView = 'login';
 	let measurements = [];
 	let totalConsumption = 0;
 	let averageConsumption = 0;
@@ -26,6 +26,7 @@
 		isAuthenticated = !!value.token;
 		token = value.token;
 		if (isAuthenticated) {
+			currentView = 'dashboard';
 			fetchMeasurements();
 			fetchCurrentUser(); // Fetch user details after authentication
 		} else {
