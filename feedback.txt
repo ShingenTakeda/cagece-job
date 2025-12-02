@@ -1,0 +1,9 @@
+criticas:
+1. campos em inglês
+2. endereço precisa informar se precisa numeração ou não
+3. insight melhores da conta(porcentagem da conta que seria a quantidade de agua + imposto/consumo sobre temperatura)
+4. usuario pode ter mais de um local, fazer dashboard composto(todos os locais) e de apenas uma localização
+5. lugar para pagar as contas(ou pelo ao menos redirecionar)
+6. alguns campos não condizem com a conta de agua em si(litros vs metro cubico), conta de agua pode ser compor o apartamento inteiro
+7. qunado entra o site fica em branco, como se tivesse travado
+8. fazer frontend para dispositivos moveis
