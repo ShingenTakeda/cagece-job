@@ -38,7 +38,7 @@
 </script>
 
 <div class="p-6">
-	<h1 class="text-3xl font-bold mb-6 text-gray-800">Dashboard - Medição de Água</h1>
+	<h1 class="text-3xl font-bold mb-6 text-gray-800">Painel - Medição de Água</h1>
 	
 	<!-- User Appliances -->
 	{#if currentUser && currentUser.appliances && currentUser.appliances.length > 0}
@@ -149,5 +149,3 @@
 		</div>
 	</div>
 </div>
-
-

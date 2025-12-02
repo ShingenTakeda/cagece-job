@@ -19,24 +19,22 @@
                 const data = await response.json();
                 auth.login(data.token);
             } else {
-                error = 'Invalid credentials';
+                error = 'Credenciais inválidas';
             }
         } catch (e) {
-            error = 'An error occurred';
+            error = 'Ocorreu um erro';
         }
     }
 </script>
 
 <div class="max-w-md mx-auto mt-10 p-8 bg-white rounded-lg shadow-md">
-    <h2 class="text-3xl font-bold text-center mb-6 text-gray-800">Login</h2>
+    <h2 class="text-3xl font-bold text-center mb-6 text-gray-800">Entrar</h2>
     <form on:submit|preventDefault={login} class="flex flex-col space-y-4">
-        <input type="email" bind:value={email} placeholder="Email" required class="p-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" />
-        <input type="password" bind:value={password} placeholder="Password" required class="p-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" />
-        <button type="submit" class="bg-blue-600 text-white p-3 rounded-md hover:bg-blue-700 transition-colors font-semibold">Login</button>
+        <input type="email" bind:value={email} placeholder="E-mail" required class="p-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" />
+        <input type="password" bind:value={password} placeholder="Senha" required class="p-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" />
+        <button type="submit" class="bg-blue-600 text-white p-3 rounded-md hover:bg-blue-700 transition-colors font-semibold">Entrar</button>
         {#if error}
             <p class="text-red-500 text-center">{error}</p>
         {/if}
     </form>
 </div>
-
-

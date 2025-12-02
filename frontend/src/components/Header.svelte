@@ -23,7 +23,7 @@
 						class:bg-blue-700={currentView === 'dashboard'}
 						on:click={() => setView('dashboard')}
 					>
-						📊 Dashboard
+						📊 Painel
 					</button>
 					<button 
 						class="px-3 py-2 rounded-md hover:bg-blue-700 transition-colors" 
@@ -58,12 +58,10 @@
 						class:bg-blue-700={currentView === 'signup'}
 						on:click={() => setView('signup')}
 					>
-						Sign Up
+						Cadastre-se
 					</button>
 				{/if}
 			</nav>
 		</div>
 	</div>
 </header>
-
-
