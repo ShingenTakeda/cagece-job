@@ -1,6 +1,6 @@
 #!/bin/bash
 
-echo "🚀 Instalando CAGECE - Serviço de Medição de Água"
+echo "🚀 Instalando HidroLógica - Serviço de Medição de Água"
 echo "=================================================="
 
 # Check if Node.js is installed

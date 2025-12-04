@@ -201,7 +201,7 @@
 
 		{#if measurements.length === 0}
 			<div class="text-center py-12 text-gray-600">
-				<div class="text-5xl mb-4">📊</div>
+				<div class="text-5xl mb-4"></div>
 				<h3 class="text-xl font-semibold mb-2">Nenhum dado disponível</h3>
 				<p class="text-gray-500">Registre algumas medições para gerar relatórios.</p>
 			</div>
@@ -231,11 +231,11 @@
 				<div class="bg-white p-5 rounded-lg shadow-md text-center">
 					<div class="text-4xl font-bold mb-1 flex items-center justify-center gap-2" class:text-red-500={trend === 'increasing'} class:text-green-500={trend === 'decreasing'} class:text-gray-600={trend === 'stable'}>
 						{#if trend === 'increasing'}
-							📈 Crescendo
+							Crescendo
 						{:else if trend === 'decreasing'}
-							📉 Diminuindo
+							Diminuindo
 						{:else}
-							➡️ Estável
+							Estável
 						{/if}
 					</div>
 					<div class="text-sm text-gray-500 uppercase">Tendência</div>

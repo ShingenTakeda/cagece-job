@@ -1,4 +1,4 @@
-# CAGECE - Serviço de Medição de Água
+# HidroLógica - Serviço de Medição de Água
 
 Um sistema web moderno para medição e controle de consumo de água, desenvolvido em Svelte com interface em português brasileiro.
 
@@ -28,16 +28,19 @@ Um sistema web moderno para medição e controle de consumo de água, desenvolvi
 ### Passos para instalação
 
 1. **Clone ou baixe o projeto**
+
    ```bash
    cd /home/mitsuo/Desktop/cagece
    ```
 
 2. **Instale as dependências**
+
    ```bash
    npm install
    ```
 
 3. **Execute o servidor de desenvolvimento**
+
    ```bash
    npm run dev
    ```
@@ -54,23 +57,27 @@ Um sistema web moderno para medição e controle de consumo de água, desenvolvi
 ## 📱 Como Usar
 
 ### 1. Dashboard
+
 - Visualize estatísticas gerais do consumo
 - Acompanhe as medições mais recentes
 - Acesse ações rápidas
 
 ### 2. Nova Medição
+
 - Preencha o número do hidrômetro
 - Informe a leitura anterior e atual
 - O consumo é calculado automaticamente
 - Adicione localização e observações
 
 ### 3. Histórico
+
 - Visualize todas as medições registradas
 - Use filtros de busca e ordenação
 - Exporte os dados para análise externa
 - Exclua medições incorretas
 
 ### 4. Relatórios
+
 - Analise o consumo por período (semanal/mensal)
 - Identifique os maiores consumidores
 - Visualize tendências de consumo
@@ -97,17 +104,19 @@ A interface foi desenvolvida com foco na usabilidade e acessibilidade:
 ## 🔧 Personalização
 
 ### Modificar Cores
+
 Edite o arquivo `public/global.css` para alterar o esquema de cores:
 
 ```css
 :root {
-  --primary-color: #4CAF50;
+  --primary-color: #4caf50;
   --secondary-color: #6c757d;
   --danger-color: #dc3545;
 }
 ```
 
 ### Adicionar Novos Campos
+
 Para adicionar novos campos ao formulário de medição, edite `src/components/MeasurementForm.svelte`.
 
 ## 📊 Estrutura dos Dados
@@ -132,11 +141,13 @@ Cada medição contém:
 Para fazer deploy da aplicação:
 
 1. **Gere a versão de produção**
+
    ```bash
    npm run build
    ```
 
 2. **Os arquivos estarão na pasta `public/`**
+
    - `public/build/bundle.js` - JavaScript da aplicação
    - `public/build/bundle.css` - Estilos da aplicação
    - `public/index.html` - Página principal
@@ -176,4 +187,4 @@ Para dúvidas ou problemas:
 
 ---
 
-**Desenvolvido com ❤️ para a CAGECE - Companhia de Água e Esgoto do Ceará**
+**Desenvolvido com ❤️ para a HidroLógica - Companhia de Água e Esgoto do Ceará**
